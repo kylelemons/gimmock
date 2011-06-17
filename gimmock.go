@@ -49,20 +49,29 @@ func (m *Mock) MockClass() string {
 	fmt.Fprintf(buf, "\treturns map[string][][]interface{}\n")
 	fmt.Fprintf(buf, "\tstubs map[string]func()[]interface{}\n")
 	fmt.Fprint(buf, "}\n")
+	fmt.Fprintf(buf, "\nfunc newMock%s() *mock%s {\n", m.Name, m.Name)
+	fmt.Fprintf(buf, "\treturn &mock%s{\n", m.Name)
+	fmt.Fprintf(buf, "\t\tcalls: map[string][][]interface{} {\n")
+	for _, meth := range m.Methods {
+		fmt.Fprintf(buf, "\t\t\t%q: {},\n", meth.Name)
+	}
+	fmt.Fprintf(buf, "\t\t},\n")
+	fmt.Fprintf(buf, "\t\treturns: map[string][][]interface{} {\n")
+	for _, meth := range m.Methods {
+		fmt.Fprintf(buf, "\t\t\t%q: {},\n", meth.Name)
+	}
+	fmt.Fprintf(buf, "\t\t},\n")
+	fmt.Fprintf(buf, "\t\tstubs: map[string]func()[]interface{} {},\n")
+	fmt.Fprintf(buf, "\t}\n")
+	fmt.Fprintf(buf, "}\n")
 	for _, meth := range m.Methods {
 		fmt.Fprintf(buf, "\nfunc (this *mock%s) %s(", m.Name, meth.Name)
 		for i, param := range meth.Params {
-			if i > 0 {
-				fmt.Fprint(buf, ", ")
-			}
-			fmt.Fprintf(buf, "arg%d %s", i, param)
+			fmt.Fprintf(buf, "arg%d %s,", i, param)
 		}
 		fmt.Fprintf(buf, ") (")
 		for i, ret := range meth.Returns {
-			if i > 0 {
-				fmt.Fprint(buf, ", ")
-			}
-			fmt.Fprintf(buf, "ret%d %s", i, ret)
+			fmt.Fprintf(buf, "ret%d %s,", i, ret)
 		}
 		fmt.Fprintf(buf, ") {\n")
 		fmt.Fprintf(buf, "\tstub, calls, rets := this.stubs[%q], this.calls[%q], this.returns[%q]\n",
@@ -125,6 +134,18 @@ func (m *Mock) MockClass() string {
 			fmt.Fprintf(buf, "\t_ = ret // no return values to process\n")
 		}
 		fmt.Fprintf(buf, "\treturn\n")
+		fmt.Fprintf(buf, "}\n")
+		fmt.Fprintf(buf, "\nfunc (this *mock%s) Expect%s(", m.Name, meth.Name)
+		for i, param := range meth.Params {
+			fmt.Fprintf(buf, "arg%d %s,", i, param)
+		}
+		fmt.Fprintf(buf, ") (\n")
+		fmt.Fprintf(buf, ") {\n")
+		fmt.Fprintf(buf, "\tthis.calls[%q] = append(this.calls[%q], []interface{} {\n", meth.Name, meth.Name)
+		for i := range meth.Params {
+			fmt.Fprintf(buf, "\t\targ%d,\n", i)
+		}
+		fmt.Fprintf(buf, "\t})\n")
 		fmt.Fprintf(buf, "}\n")
 	}
 	return buf.String()

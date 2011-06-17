@@ -12,8 +12,8 @@ all : pkgs cmds
 
 define recurse
 @echo "$(3) $(1) $(2)" | sed -e 's/^all/build/'
-@rm -f _go_.*
-@$(MAKE) -f Makefile.$(2) $(3)
+@[[ "$1" != "cmd" ]] || $(MAKE) -C $(2) $(3)
+@[[ "$1" != "pkg" ]] || $(MAKE) -f Makefile.$(2) $(3)
 
 endef
 

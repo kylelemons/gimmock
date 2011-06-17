@@ -3,6 +3,8 @@ Installation
 
 To install, type `goinstall -u github.com/kylelemons/gimmock{,/mock}`
 
+NOTE: Not all of the functionality outlined below is implemented.  Check out the `example/` directory to see what is.
+
 Usage
 =====
 

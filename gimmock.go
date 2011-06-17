@@ -11,6 +11,13 @@ import (
 	"go/parser"
 )
 
+var (
+	MockDependencies = []string{
+		"os",
+		"github.com/kylelemons/gimmock",
+	}
+)
+
 type Method struct {
 	Name    string
 	Params  []string
@@ -61,7 +68,7 @@ func (m *Mock) MockClass() string {
 		fmt.Fprintf(buf, "\tstub, calls, rets := this.stubs[%q], this.calls[%q], this.returns[%q]\n",
 			meth.Name, meth.Name, meth.Name)
 		fmt.Fprintf(buf, "\tif len(calls) == 0 || (stub == nil && len(rets) == 0) {\n")
-		fmt.Fprintf(buf, "\t\tpanic(&UnexpectedCall{\n")
+		fmt.Fprintf(buf, "\t\tpanic(&gimmock.UnexpectedCall{\n")
 		fmt.Fprintf(buf, "\t\t\tInterface: \"%s\",\n", m.Name)
 		fmt.Fprintf(buf, "\t\t\tMethod: \"%s\",\n", meth.Name)
 		fmt.Fprintf(buf, "\t\t\tArgs: []interface{}{\n")
@@ -79,7 +86,7 @@ func (m *Mock) MockClass() string {
 				if strings.IndexRune(arg, ']') >= 0 {
 					fmt.Fprintf(buf, "\t\t{\n")
 					fmt.Fprintf(buf, "\t\t\tgots, wants := arg%d, call[%d].(%s)\n", i, i, arg)
-					fmt.Fprintf(buf, "\t\t\tbad := &WrongArgument{\n")
+					fmt.Fprintf(buf, "\t\t\tbad := &gimmock.WrongArgument{\n")
 					fmt.Fprintf(buf, "\t\t\t\t\tInterface: \"%s\",\n", m.Name)
 					fmt.Fprintf(buf, "\t\t\t\t\tMethod: \"%s\",\n", meth.Name)
 					fmt.Fprintf(buf, "\t\t\t\t\tIdx: %d,\n", i)
@@ -91,7 +98,7 @@ func (m *Mock) MockClass() string {
 					fmt.Fprintf(buf, "\t\t}\n")
 				} else {
 					fmt.Fprintf(buf, "\t\tif got, want := arg%d, call[%d].(%s); got != want {\n", i, i, arg)
-					fmt.Fprintf(buf, "\t\t\tpanic(&WrongArgument{\n")
+					fmt.Fprintf(buf, "\t\t\tpanic(&gimmock.WrongArgument{\n")
 					fmt.Fprintf(buf, "\t\t\t\tInterface: \"%s\",\n", m.Name)
 					fmt.Fprintf(buf, "\t\t\t\tMethod: \"%s\",\n", meth.Name)
 					fmt.Fprintf(buf, "\t\t\t\tIdx: %d,\n", i)

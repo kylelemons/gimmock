@@ -3,5 +3,6 @@ include $(GOROOT)/src/Make.inc
 TARG=github.com/kylelemons/gimmock
 GOFILES=\
 	gimmock.go\
+	errors.go\
 
 include $(GOROOT)/src/Make.pkg

@@ -5,22 +5,9 @@ import (
 )
 
 func TestMockBoolean(t *testing.T) {
-	var iface Iface = &mockIface{
-		calls: map[string][][]interface{} {
-			"Boolean": {
-				{},
-				{},
-			},
-		},
-		returns: map[string][][]interface{} {
-			"Boolean": {
-				{true},
-				{false},
-			},
-		},
-		stubs: map[string]func() []interface{} {
-		},
-	}
+	iface := newMockIface().
+		ExpectBoolean().AndReturn(true).
+		ExpectBoolean().AndReturn(false)
 
 	if got, want := iface.Boolean(), true; got != want {
 		t.Errorf("bool: got %v, want %v", got, want)

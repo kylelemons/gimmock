@@ -2,7 +2,8 @@ include $(GOROOT)/src/Make.inc
 
 TARG=github.com/kylelemons/gimmock
 GOFILES=\
-	gimmock.go\
 	errors.go\
+	gimmock.go\
+	package.go\
 
 include $(GOROOT)/src/Make.pkg

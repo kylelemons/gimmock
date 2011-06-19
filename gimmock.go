@@ -80,7 +80,7 @@ func (m *Mock) MockClass() string {
 		w(") {\n")
 		w("\tstub, calls, rets := this.stubs[%q], this.calls[%q], this.returns[%q]\n",
 			meth.Name, meth.Name, meth.Name)
-		w("\tif len(calls) == 0 || (stub == nil && len(rets) == 0) {\n")
+		w("\tif (len(calls) == 0 || len(rets) == 0) && stub == nil {\n")
 		w("\t\tpanic(&gimmock.UnexpectedCall{\n")
 		w("\t\t\tInterface: \"%s\",\n", m.Name)
 		w("\t\t\tMethod: \"%s\",\n", meth.Name)
@@ -126,7 +126,7 @@ func (m *Mock) MockClass() string {
 			w("\t_ = call // no arguments to process\n")
 		}
 		if len(meth.Returns) > 0 {
-			w("\tif stub != nil {\n")
+			w("\tif len(rets) == 0 {\n")
 			w("\t\tret = stub()\n")
 			w("\t} else {\n")
 			w("\t\tret, this.returns[%q] = rets[0], rets[1:]\n", meth.Name)
@@ -171,6 +171,24 @@ func (m *Mock) MockClass() string {
 		w("\t\treturn this\n")
 		w("\t}\n")
 		w("\treturn\n")
+		w("}\n")
+		w("\nfunc (this *mock%s) Stub%sReturn(", m.Name, meth.Name)
+		for i, ret := range meth.Returns {
+			if i > 0 {
+				w(",")
+			}
+			w("ret%d %s", i, ret)
+		}
+		w(") *mock%s {\n", m.Name)
+		w("\t\tret := []interface{} {\n")
+		for i := range meth.Returns {
+			w("\t\tret%d,\n", i)
+		}
+		w("\t\t}\n")
+		w("\tthis.stubs[%q] = func() []interface{} {\n", meth.Name)
+		w("\t\treturn ret\n")
+		w("\t}\n")
+		w("\treturn this\n")
 		w("}\n")
 	}
 	return buf.String()
